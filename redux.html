@@ -115,35 +115,76 @@
       }
     }
     const store = createStore(app)
+
+
     store.subscribe(() => {
-      console.log('The new state is: ', store.getState())
+      // Instead of console.log, I am going to display these getState by looping over individual items.
+      // console.log('The new state is: ', store.getState())
+
+      const {todos, goals} = store.getState()
+
+      document.getElementById('todos').innerHTML = '';
+      document.getElementById('goals').innerHTML = '';
+      
+      todos.forEach(addTodoToDOM)
+      goals.forEach(addGoalToDOM)
+      
+      // console.log('todos', todos);
+      // console.log('goals', goals);
     })
-    store.dispatch(addTodoAction({
-      id: 0,
-      name: 'Walk the dog',
-      complete: false,
-    }))
-    store.dispatch(addTodoAction({
-      id: 1,
-      name: 'Wash the car',
-      complete: false,
-    }))
-    store.dispatch(addTodoAction({
-      id: 2,
-      name: 'Go to the gym',
-      complete: true,
-    }))
-    store.dispatch(removeTodoAction(1))
-    store.dispatch(toggleTodoAction(0))
-    store.dispatch(addGoalAction({
-      id: 0,
-      name: 'Learn Redux'
-    }))
-    store.dispatch(addGoalAction({
-      id: 1,
-      name: 'Lose 20 pounds'
-    }))
-    store.dispatch(removeGoalAction(0))
+
+    function addTodoToDOM(todo) {
+      const node = document.createElement('li')
+      const text = document.createTextNode(todo.name)
+      node.appendChild(text)
+      // If a bullet is complete, then give a line through (style property), if not, do nothing. (make sure to add/connect event listener)
+      node.style.textDecoration = todo.complete ? 'line-through' : 'none'
+      node.addEventListener('click', () => {
+        store.dispatch(toggleTodoAction(todo.id))
+      })
+
+      document.getElementById('todos')
+        .appendChild(node)
+    }
+
+    function addGoalToDOM(goal) {
+      const node = document.createElement('li')
+      const text = document.createTextNode(goal.name)
+      node.appendChild(text)
+
+      document.getElementById('goals')
+        .appendChild(node)
+    }
+
+
+
+    // Manual dispatch - existing dummy data
+    // store.dispatch(addTodoAction({
+    //   id: 0,
+    //   name: 'Walk the dog',
+    //   complete: false,
+    // }))
+    // store.dispatch(addTodoAction({
+    //   id: 1,
+    //   name: 'Wash the car',
+    //   complete: false,
+    // }))
+    // store.dispatch(addTodoAction({
+    //   id: 2,
+    //   name: 'Go to the gym',
+    //   complete: true,
+    // }))
+    // store.dispatch(removeTodoAction(1))
+    // store.dispatch(toggleTodoAction(0))
+    // store.dispatch(addGoalAction({
+    //   id: 0,
+    //   name: 'Learn Redux'
+    // }))
+    // store.dispatch(addGoalAction({
+    //   id: 1,
+    //   name: 'Lose 20 pounds'
+    // }))
+    // store.dispatch(removeGoalAction(0))
 
     // DOM code
     function addTodo() {
