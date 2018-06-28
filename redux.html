@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Todos/Goals</title>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js'></script>
 </head>
 <body>
   <div>
@@ -98,6 +99,7 @@
           return state
       }
     }
+
     function goals (state = [], action) {
       switch(action.type) {
         case ADD_GOAL :
@@ -123,9 +125,11 @@
 
       const {todos, goals} = store.getState()
 
+      // Anytime an item is added, the previous goal/todos - deleting unnecessary items.
       document.getElementById('todos').innerHTML = '';
       document.getElementById('goals').innerHTML = '';
       
+      // Inside the todos and goals array, run addTodoDOM/addGoalToDOM
       todos.forEach(addTodoToDOM)
       goals.forEach(addGoalToDOM)
       
@@ -133,28 +137,7 @@
       // console.log('goals', goals);
     })
 
-    function addTodoToDOM(todo) {
-      const node = document.createElement('li')
-      const text = document.createTextNode(todo.name)
-      node.appendChild(text)
-      // If a bullet is complete, then give a line through (style property), if not, do nothing. (make sure to add/connect event listener)
-      node.style.textDecoration = todo.complete ? 'line-through' : 'none'
-      node.addEventListener('click', () => {
-        store.dispatch(toggleTodoAction(todo.id))
-      })
 
-      document.getElementById('todos')
-        .appendChild(node)
-    }
-
-    function addGoalToDOM(goal) {
-      const node = document.createElement('li')
-      const text = document.createTextNode(goal.name)
-      node.appendChild(text)
-
-      document.getElementById('goals')
-        .appendChild(node)
-    }
 
 
 
@@ -186,7 +169,63 @@
     // }))
     // store.dispatch(removeGoalAction(0))
 
+
     // DOM code
+
+    // REMOVE FUNCTION
+    // Whenever we need a button, call createRemoveButton by passing any function
+    function createRemoveButton (onClick) {
+      const removeBtn = document.createElement('button')
+      removeBtn.innerHTML = 'x'
+      removeBtn.addEventListener('click', onClick)
+
+      return removeBtn
+    }
+
+    // TODO LIST SECTION (state managed by redux)
+    // Based on forEach above, it will add 'todo' that has an id of 'todos'
+    // This function allows to append 'li' based on user's input
+    function addTodoToDOM(todo) {
+      const node = document.createElement('li')
+      const text = document.createTextNode(todo.name)
+
+      const removeBtn = createRemoveButton(() => {
+        store.dispatch(removeTodoAction(todo.id))
+      })
+
+      node.appendChild(text)
+      node.appendChild(removeBtn)
+      // If a bullet is complete, then give a line through (style property), if not, do nothing. (make sure to add/connect event listener)
+      // If todo.complete is true, go ahead and (text-decoration) line through... if not, no action needed
+      node.style.textDecoration = todo.complete ? 'line-through' : 'none'
+      node.addEventListener('click', () => {
+        store.dispatch(toggleTodoAction(todo.id))
+      })
+
+      document.getElementById('todos')
+        .appendChild(node)
+    }
+
+    // GOALS SECTION
+    function addGoalToDOM(goal) {
+      const node = document.createElement('li')
+      const text = document.createTextNode(goal.name)
+
+      // Remove specific item from the list
+      // Whenever the button is clicked, we call store.dispatch to remove passing in specific 'id'
+      const removeBtn = createRemoveButton(() => {
+        store.dispatch(removeGoalAction(goal.id))
+      })
+
+      node.appendChild(text)
+      node.appendChild(removeBtn)
+
+      document.getElementById('goals')
+        .appendChild(node)
+    }
+
+
+
     function addTodo() {
       const input = document.getElementById('todo')
       const name = input.value
@@ -223,3 +262,5 @@
   </script>
 </body>
 </html>
+
+<!-- // Adding UI to Library - review -->
