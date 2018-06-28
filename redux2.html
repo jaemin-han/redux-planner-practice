@@ -2,6 +2,8 @@
 <html>
 <head>
   <title>Todos/Goals</title>
+  <!-- Latest version of redux -->
+  <!-- Added a global property called 'Redux' -->
   <script src='https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js'></script>
 </head>
 <body>
@@ -67,6 +69,7 @@
     // Reducer function
     function todos (state = [], action) {
       switch(action.type) {
+        // Action type(s)
         case ADD_TODO :
           return state.concat([action.todo])
         case REMOVE_TODO :
@@ -92,6 +95,7 @@
     }
 
     // NO NEED because of REDUX below - recreation
+    // Root Reducer (separate state of the store to reducers) Before the 'store' combineds the Reducers
     // function app (state = {}, action) {
     //   return {
     //     todos: todos(state.todos, action),
@@ -252,3 +256,57 @@
 </html>
 
 <!-- // Adding UI to Library - review -->
+<!-- Actions, Reducers, and createStore -->
+<!-- Middleware -->
+
+<!-- 
+  NOTE SECTION:
+
+Action Creators: return different actions.
+
+1. Setup 'ACTIONS'
+Actions: Object representation of different events that can occur in my application
+  - My app has five (action) events that can change the state of the Redux Store.
+  - ADD_TODO, REMOVE_TODO, TOGGLE_TODO, ADD_GOAL, REMOVE_GOAL
+  - Add different properties in these event objects
+
+2. Setup 'REDUCERS'
+Reducers are responsible for is they take in the current state of specific section of the store. (i.e. todos, goals)
+  - Reducer function takes in state and action as argument
+  - Depending on the 'ACTIONs' (ADD_TODO, REMOVE_TODO, TOGGLE_TODO), go ahead and update/return a brand new state based off of that action
+
+3. Create a 'STORE'
+// Call Redux.createStore, passing a 'Reducer'
+
+const store = Redux.createStore(Redux.combineReducers({
+  todos,
+  goals
+}))
+
+Example above, there are TWO Reducers but** 'Redux.combineReducers' combines them, giving back one Reducer
+And then pass it to 'createStore'
+
+'store' is an object and now has three different properties 
+  a. SUBSCRIBE property
+  b. GETSTATE property
+  c. DISPATCH property
+
+store contains ALL states in the application, and we can get by...
+  a. By calling 'getState()'
+  b. Get notified whenever the state changes is specific for 'subscribe()'
+  c. Update the state by calling 'Dispatch'
+    c1. what I pass dispatch is specific action which is occuring
+    c2. Wrap everything inside the action creators. Invoke action creators (removeTodoAction...etc)
+        returning actual action object
+
+When dispatch is called...        
+4. Redux is going to go through all of Reducers (todos, goals)
+
+5. Whenever we dispatch an action, it's going through every reducers in order to get a new state
+  a. If we have a 'goals' reducer that does not respond to specific event / action type that occurred 
+      It will simply return previous 'STATE' (default)
+
+
+6. Subscribe 
+  - Creating a few DOM so I can hook up Redux Store onto the actual UI
+-->
