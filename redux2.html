@@ -24,31 +24,10 @@
     }
     // Library for managing state inside the application
     // It contains Reducers, actions, 'createStore' function. (similar to Redux)
-    function createStore (reducer) {
-      // The store should have four parts
-      // 1. The state
-      // 2. Get the state. (getState)
-      // 3. Listen to changes on the state. (subscribe)
-      // 4. Update the state (dispatch)
-      let state
-      let listeners = []
-      const getState = () => state
-      const subscribe = (listener) => {
-        listeners.push(listener)
-        return () => {
-          listeners = listeners.filter((l) => l !== listener)
-        }
-      }
-      const dispatch = (action) => {
-        state = reducer(state, action)
-        listeners.forEach((listener) => listener())
-      }
-      return {
-        getState,
-        subscribe,
-        dispatch,
-      }
-    }
+
+
+    // DELETED LIBRARY CODE FOR REDUX IMPLEMENTATION (check redux.html for reference)
+
     // App Code
     const ADD_TODO = 'ADD_TODO'
     const REMOVE_TODO = 'REMOVE_TODO'
@@ -111,13 +90,21 @@
           return state
       }
     }
-    function app (state = {}, action) {
-      return {
-        todos: todos(state.todos, action),
-        goals: goals(state.goals, action)
-      }
-    }
-    const store = createStore(app)
+
+    // NO NEED because of REDUX below - recreation
+    // function app (state = {}, action) {
+    //   return {
+    //     todos: todos(state.todos, action),
+    //     goals: goals(state.goals, action)
+    //   }
+    // }
+
+    // Added 'REDUX.' - REAL THING
+    // Smart enough to know and reference todos and goals
+    const store = Redux.createStore(Redux.combineReducers({
+      todos,
+      goals
+    }))
 
 
     store.subscribe(() => {
