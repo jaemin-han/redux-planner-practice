@@ -304,10 +304,30 @@
         }
 
         class Todos extends React.Component {
+            addItem = (e) => {
+                e.preventDefault()
+                const name = this.input.value
+                this.input.value = ''
+                
+                // Access from <App /> as props
+                // Sharing same state
+                this.props.store.dispatch(addTodoAction({
+                    id: generateId(),
+                    name,
+                    complete: false
+                }))
+            }
+
             render() {
                 return (
                     <div>
-                        TODOS
+                        <h1>Todo List</h1>
+                        <input
+                            type='text'
+                            placeholder='Add Todo'
+                            ref={(input) => this.input = input}
+                        />
+                        <button onClick={this.addItem}>Add Todo</button>
                         <List />
                     </div>
                 )
@@ -315,10 +335,28 @@
         }
 
         class Goals extends React.Component {
+            addItem = (e) => {
+                e.preventDefault()
+                const name = this.input.value
+                this.input.value = ''
+                
+                // Access from <App /> as props
+                // Sharing same state
+                this.props.store.dispatch(addGoalAction({
+                    id: generateId(),
+                    name,
+                }))
+            }
             render() {
                 return (
                     <div>
-                        GOALS
+                        <h1>Goals</h1>
+                        <input
+                            type='text'
+                            placeholder='Add Goal'
+                            ref={(input) => this.input = input}
+                        />
+                        <button onClick={this.addItem}>Add Goal</button>
                         <List />
                     </div>
                 )
@@ -329,15 +367,15 @@
             render() {
                 return (
                     <div>
-                        <Todos />
-                        <Goals />
+                        <Todos store={this.props.store} />
+                        <Goals store={this.props.store}/>
                     </div>
                 )
             }
         }
 
         ReactDOM.render(
-            <App />,
+            <App store={store} />,
             document.getElementById('app')
         )
     </script>
