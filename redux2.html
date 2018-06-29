@@ -66,6 +66,28 @@
         id,
       }
     }
+
+    // Redux Middleware
+    const checker = (store) => (next) => (action) => {
+      if (
+        action.type === ADD_TODO &&
+        action.todo.name.toLowerCase().indexOf('atlanta') !== -1
+      ) {
+        return alert ('Atlanta?? You sure?!')
+      }
+
+      if (
+        action.type === ADD_GOAL &&
+        action.goal.name.toLowerCase().indexOf('atlanta') !== -1
+      ) {
+        return alert ('Atlanta, for realz?!')
+      }
+
+      return next(action)
+    } 
+
+
+
     // Reducer function
     function todos (state = [], action) {
       switch(action.type) {
@@ -105,10 +127,11 @@
 
     // Added 'REDUX.' - REAL THING
     // Smart enough to know and reference todos and goals
+    // Redux Middleware added for checking specific word*
     const store = Redux.createStore(Redux.combineReducers({
       todos,
       goals
-    }))
+    }), Redux.applyMiddleware(checker))
 
 
     store.subscribe(() => {
