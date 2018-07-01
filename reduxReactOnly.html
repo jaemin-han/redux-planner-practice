@@ -8,24 +8,10 @@
     <script src='https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js'></script>
     <script src='https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js'></script>
     <script src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js'></script>
-    <script src='https://tylermcginnis.com/goals-todos-api/index.js'></script>
+    <!-- Created dummy api instead of creating a server -->
+    <script src='API.js'></script>
 </head>
 <body>
-  <div>
-      <h1>Todo List</h1>
-      <input id='todo' type='text' placeholder="Add Todo">
-      <button id='todoBtn'>Add Todo</button>
-      <ul id='todos'></ul>
-    </div>
-    <div>
-      <h1>Goals</h1>
-      <input id='goal' type='text' placeholder='Add Goal' />
-      <button id='goalBtn'>Add Goal</button>
-      <ul id='goals'></ul>
-    </div>
-
-    <hr>
-
   <div id="app"></div>
 
   <script type='text/javascript'>
@@ -44,6 +30,8 @@
     const TOGGLE_TODO = 'TOGGLE_TODO'
     const ADD_GOAL = 'ADD_GOAL'
     const REMOVE_GOAL = 'REMOVE_GOAL'
+    const RECIEVE_DATA = 'RECEIVE_DATA'
+
     function addTodoAction (todo) {
       return {
         type: ADD_TODO,
@@ -73,6 +61,13 @@
         type: REMOVE_GOAL,
         id,
       }
+    }
+    function receiveDataAction(todos, goals) {
+        return {
+            type: RECIEVE_DATA,
+            todos,
+            goals,
+        }
     }
 
     // Redux Middleware
@@ -104,10 +99,6 @@
       return result
     }
 
-
-
-
-
     // Reducer function
     function todos (state = [], action) {
       switch(action.type) {
@@ -120,6 +111,8 @@
           return state.map((todo) => todo.id !== action.id ? todo :
             Object.assign({}, todo, {complete: !todo.complete})
           )
+        case RECIEVE_DATA :
+            return action.todos
         default :
           return state
       }
@@ -128,9 +121,11 @@
     function goals (state = [], action) {
       switch(action.type) {
         case ADD_GOAL :
-          return state.concat([action.goal])
+            return state.concat([action.goal])
         case REMOVE_GOAL :
-          return state.filter((goal) => goal.id !== action.id)
+            return state.filter((goal) => goal.id !== action.id)
+        case RECIEVE_DATA :
+            return action.goals
         default :
           return state
       }
@@ -152,146 +147,6 @@
       todos,
       goals
     }), Redux.applyMiddleware(checker, logger))
-
-
-    store.subscribe(() => {
-      // Instead of console.log, I am going to display these getState by looping over individual items.
-      // console.log('The new state is: ', store.getState())
-
-      const {todos, goals} = store.getState()
-
-      // Anytime an item is added, the previous goal/todos - deleting unnecessary items.
-      document.getElementById('todos').innerHTML = '';
-      document.getElementById('goals').innerHTML = '';
-      
-      // Inside the todos and goals array, run addTodoDOM/addGoalToDOM
-      todos.forEach(addTodoToDOM)
-      goals.forEach(addGoalToDOM)
-      
-      // console.log('todos', todos);
-      // console.log('goals', goals);
-    })
-
-
-
-
-
-    // Manual dispatch - existing dummy data
-    // store.dispatch(addTodoAction({
-    //   id: 0,
-    //   name: 'Walk the dog',
-    //   complete: false,
-    // }))
-    // store.dispatch(addTodoAction({
-    //   id: 1,
-    //   name: 'Wash the car',
-    //   complete: false,
-    // }))
-    // store.dispatch(addTodoAction({
-    //   id: 2,
-    //   name: 'Go to the gym',
-    //   complete: true,
-    // }))
-    // store.dispatch(removeTodoAction(1))
-    // store.dispatch(toggleTodoAction(0))
-    // store.dispatch(addGoalAction({
-    //   id: 0,
-    //   name: 'Learn Redux'
-    // }))
-    // store.dispatch(addGoalAction({
-    //   id: 1,
-    //   name: 'Lose 20 pounds'
-    // }))
-    // store.dispatch(removeGoalAction(0))
-
-
-    // DOM code
-
-    // REMOVE FUNCTION
-    // Whenever we need a button, call createRemoveButton by passing any function
-    function createRemoveButton (onClick) {
-      const removeBtn = document.createElement('button')
-      removeBtn.innerHTML = 'x'
-      removeBtn.addEventListener('click', onClick)
-
-      return removeBtn
-    }
-
-    // TODO LIST SECTION (state managed by redux)
-    // Based on forEach above, it will add 'todo' that has an id of 'todos'
-    // This function allows to append 'li' based on user's input
-    function addTodoToDOM(todo) {
-      const node = document.createElement('li')
-      const text = document.createTextNode(todo.name)
-
-      const removeBtn = createRemoveButton(() => {
-        store.dispatch(removeTodoAction(todo.id))
-      })
-
-      node.appendChild(text)
-      node.appendChild(removeBtn)
-      // If a bullet is complete, then give a line through (style property), if not, do nothing. (make sure to add/connect event listener)
-      // If todo.complete is true, go ahead and (text-decoration) line through... if not, no action needed
-      node.style.textDecoration = todo.complete ? 'line-through' : 'none'
-      node.addEventListener('click', () => {
-        store.dispatch(toggleTodoAction(todo.id))
-      })
-
-      document.getElementById('todos')
-        .appendChild(node)
-    }
-
-    // GOALS SECTION
-    function addGoalToDOM(goal) {
-      const node = document.createElement('li')
-      const text = document.createTextNode(goal.name)
-
-      // Remove specific item from the list
-      // Whenever the button is clicked, we call store.dispatch to remove passing in specific 'id'
-      const removeBtn = createRemoveButton(() => {
-        store.dispatch(removeGoalAction(goal.id))
-      })
-
-      node.appendChild(text)
-      node.appendChild(removeBtn)
-
-      document.getElementById('goals')
-        .appendChild(node)
-    }
-
-
-
-    function addTodo() {
-      const input = document.getElementById('todo')
-      const name = input.value
-      input.value = ''
-
-      // Call store.dispatch, invoking action creator & returning an action
-      store.dispatch(addTodoAction({
-        id: generateId(),
-        name,
-        complete: false,
-      }))
-    }
-
-    function addGoal() {
-      const input = document.getElementById('goal')
-      const name = input.value
-      input.value = ''
-
-      // Call store.dispatch, invoking addGoalAction (action creator)
-      store.dispatch(addGoalAction({
-        id: generateId(),
-        name,
-    }))
-    }
-
-    // Next Step is to hook up these functions to its corresponding buttons
-    document.getElementById('todoBtn')
-      .addEventListener('click', addTodo)
-
-    document.getElementById('goalBtn')
-      .addEventListener('click', addGoal)
     </script>
 
     <!-- 4 React components - App, Goals, Todos, List -->
@@ -395,12 +250,16 @@
             componentDidMount () {
                 const { store } = this.props
                 
+                // Fetching fake data from api
+                // if promise is resolved
                 Promise.all([
                     API.fetchTodos(),
                     API.fetchGoals(),
+                // these will run when the request has been resolved
                 ]).then(([todos, goals]) => {
-                    console.log('todos', todos)
-                    colsole.log('goals', goals)
+                    // console.log('todos', todos)
+                    // console.log('goals', goals)
+                    store.dispatch(receiveDataAction(todos, goals)) 
                 })
 
                 // Causes force update - re-render
