@@ -24,7 +24,7 @@
 
     // DELETED LIBRARY CODE FOR REDUX IMPLEMENTATION (check redux.html for reference)
 
-    // App Code
+    // App Code ACTION CREATOR
     const ADD_TODO = 'ADD_TODO'
     const REMOVE_TODO = 'REMOVE_TODO'
     const TOGGLE_TODO = 'TOGGLE_TODO'
@@ -62,7 +62,9 @@
         id,
       }
     }
-    function receiveDataAction(todos, goals) {
+
+    // action -> output object
+    function receiveDataAction (todos, goals) {
         return {
             type: RECIEVE_DATA,
             todos,
@@ -70,33 +72,75 @@
         }
     }
 
+    // Separate Data fetching logic from UI logic
+    // Moved API logic to action creator
+    function handleDeleteTodo (todo) {
+        return (dispatch) => {
+            dispatch(removeTodoAction(todo.id))
+            return API.deleteTodo(todo.id)
+                .catch(() => {
+                    dispatch(addTodoAction(todo))
+                    alert('An Error Occurred. Please Try again.')
+                })
+        }
+    }
+
+    function handleDeleteGoal (goal) {
+        return (dispatch) => {
+            dispatch(removeGoalAction(goal.id))
+
+            return API.deleteGoal(goal.id)
+                .catch(() => {
+                    dispatch(addGoalAction(goal))
+                    alert('an error occurred. Try again.')
+                })
+        }
+    }
+
+    function handleAddGoal (name, cb) {
+        return (dispatch) => {
+            return API.saveGoal(name)
+                .then((goal) => {
+                    dispatch(addGoalAction(goal))
+                    cb()
+                })
+                .catch(() => alert('There was an error. Try again'))
+        }
+
+    }
     // Redux Middleware
     const checker = (store) => (next) => (action) => {
-      if (
-        action.type === ADD_TODO &&
-        action.todo.name.toLowerCase().indexOf('atlanta') !== -1
-      ) {
-        return alert ('Atlanta?? You sure?!')
-      }
-
-      if (
-        action.type === ADD_GOAL &&
-        action.goal.name.toLowerCase().indexOf('atlanta') !== -1
-      ) {
-        return alert ('Atlanta, for realz?!')
-      }
-
-      return next(action)
+        if (
+            action.type === ADD_TODO &&
+            action.todo.name.toLowerCase().indexOf('atlanta') !== -1
+        ){
+            return alert ('Atlanta?? You sure?!')
+        }
+        if (
+            action.type === ADD_GOAL &&
+            action.goal.name.toLowerCase().indexOf('atlanta') !== -1
+        ){
+            return alert ('Atlanta, for realz?!')
+        }
+        return next(action)
     } 
 
     // Logger - ways to check the status in the console.
     const logger = (store) => (next) => (action) => {
-      console.log(action.type)
-      console.log('the action: ', action)
-      const result = next(action)
-      console.log('the new state: ', store.getState())
-      console.groupEnd()
-      return result
+        console.log(action.type)
+        console.log('the action: ', action)
+        const result = next(action)
+        console.log('the new state: ', store.getState())
+        console.groupEnd()
+        return result
+    }
+
+    const thunk = (store) => (next) => (action) => {
+        if (typeof action === 'function') {
+            return action(store.dispatch)
+        }
+
+        return next(action)
     }
 
     // Reducer function
@@ -158,7 +202,7 @@
       todos,
       goals,
       loading
-    }), Redux.applyMiddleware(checker, logger))
+    }), Redux.applyMiddleware(thunk,checker, logger))
     </script>
 
     <!-- 4 React components - App, Goals, Todos, List -->
@@ -192,13 +236,10 @@
             }
 
             // Removing function item from the list
+            // If passed to dispatch is a function
+            // Invoke that function passing it 'dispatch'
             removeItem = (todo) => {
-                this.props.store.dispatch(removeTodoAction(todo.id))
-                return API.deleteTodo(todo.id)
-                    .catch(() => {
-                        this.props.store.dispatch(addTodoAction(todo))
-                        alert('An Error Occurred. Please Try Again.')
-                    })
+                this.props.store.dispatch(handleDeleteTodo(todo))
             }
 
             toggleItem = (id) => {
@@ -229,26 +270,20 @@
             }
         }
 
+        // Better to have UI code separated from API Data fetching code
+
         class Goals extends React.Component {
             addItem = (e) => {
                 e.preventDefault()
-                return API.saveGoal(this.input.value)
-                    .then((goal) => {
-                        this.props.store.dispatch(addGoalAction(goal))
-                        this.input.value = ''
-                    })
-                    .catch (() => alert('Error Dude. Try again Bro.'))
-                // Access from <App /> as props
-                // Sharing same state
+
+                // Removed asynchronous data fetching from ui into two separate action creators
+                this.props.store.dispatch(handleAddGoal(
+                    this.input.value,
+                    () => this.input.value = ''
+                ))
             }
             removeItem = (goal) => {
-                this.props.store.dispatch(removeGoalAction(goal.id))
-
-                return API.deleteGoal(goal.id)
-                    .catch(() => {
-                        this.props.store.dispatch(addGoalAction(goal))
-                        alert('Not Working. Try Again.')
-                    })
+                this.props.store.dispatch(handleDeleteGoal(goal)) 
             }
             render() {
                 return (
