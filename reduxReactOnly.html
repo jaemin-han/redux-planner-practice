@@ -131,6 +131,16 @@
       }
     }
 
+    // Asynchronous action - waiting for mock data to load - implement loading
+    function loading (state = true, action) {
+        switch(action.type) {
+            case RECIEVE_DATA :
+                return false
+            default : 
+                return state
+        }
+    }
+
     // NO NEED because of REDUX below - recreation
     // Root Reducer (separate state of the store to reducers) Before the 'store' combineds the Reducers
     // function app (state = {}, action) {
@@ -143,9 +153,11 @@
     // Added 'REDUX.' - REAL THING
     // Smart enough to know and reference todos and goals
     // Redux Middleware added for checking specific word*
+    // Loading added for 2 second wait - asynchronous action (inside combineReducers - is aware)
     const store = Redux.createStore(Redux.combineReducers({
       todos,
-      goals
+      goals,
+      loading
     }), Redux.applyMiddleware(checker, logger))
     </script>
 
@@ -250,7 +262,7 @@
             componentDidMount () {
                 const { store } = this.props
                 
-                // Fetching fake data from api
+                // Fetching data asynchronously from mock API
                 // if promise is resolved
                 Promise.all([
                     API.fetchTodos(),
@@ -268,7 +280,11 @@
 
             render() {
                 const { store } = this.props
-                const { todos, goals } = store.getState()
+                const { todos, goals, loading } = store.getState()
+
+                if (loading === true) {
+                    return <h3>Loading</h3>
+                }
 
                 return (
                     <div>
