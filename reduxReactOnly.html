@@ -183,16 +183,12 @@
         class Todos extends React.Component {
             addItem = (e) => {
                 e.preventDefault()
-                const name = this.input.value
-                this.input.value = ''
-                
-                // Access from <App /> as props
-                // Sharing same state
-                this.props.store.dispatch(addTodoAction({
-                    id: generateId(),
-                    name,
-                    complete: false
-                }))
+                return API.saveTodo(this.input.value)
+                    .then((todo) => {
+                        this.props.store.dispatch(addTodoAction(todo))
+                        this.input.value = ''
+                    })
+                    .catch(() => alert('There was an error. Try again Please.'))
             }
 
             // Removing function item from the list
@@ -206,7 +202,11 @@
             }
 
             toggleItem = (id) => {
-                this.props.store.dispatch(toggleTodoAction(id))
+                return API.saveTodoToggle(id)
+                    .catch(() => {
+                        this.props.store.dispatch(toggleTodoAction(id))
+                        alert('Error Error. Try again Later.')
+                    })
             }
             render() {
                 return (
@@ -232,15 +232,14 @@
         class Goals extends React.Component {
             addItem = (e) => {
                 e.preventDefault()
-                const name = this.input.value
-                this.input.value = ''
-                
+                return API.saveGoal(this.input.value)
+                    .then((goal) => {
+                        this.props.store.dispatch(addGoalAction(goal))
+                        this.input.value = ''
+                    })
+                    .catch (() => alert('Error Dude. Try again Bro.'))
                 // Access from <App /> as props
                 // Sharing same state
-                this.props.store.dispatch(addGoalAction({
-                    id: generateId(),
-                    name,
-                }))
             }
             removeItem = (goal) => {
                 this.props.store.dispatch(removeGoalAction(goal.id))
