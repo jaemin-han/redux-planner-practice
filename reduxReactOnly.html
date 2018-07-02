@@ -106,8 +106,52 @@
                 })
                 .catch(() => alert('There was an error. Try again'))
         }
-
     }
+
+    function handleAddTodo (name, cb) {
+        return (dispatch) => {
+            return API.saveTodo(name)
+                    .then((todo) => {
+                        dispatch(addTodoAction(todo))
+                        cb()
+                    })
+                    .catch(() => alert('There was an error. Try again Please.'))
+        }
+    }
+
+    function handleToggle (id) {
+        return (dispatch) => {
+            dispatch(toggleTodoAction(id))
+            return API.saveTodoToggle(id)
+                    .catch(() => {
+                        dispatch(toggleTodoAction(id))
+                        alert('Error Error. Try again Later.')
+                    })
+        }
+    }
+
+    // Like above, creating brand new action creator
+    // return a function so we can access to dispatch
+    // When 'handleInitialData' is dispatched,
+    // Thunk middleware will realize that 'action' is a function
+    // Invoke it by passing a 'dispatch' 
+    // Then pass [both] API fetch
+    // Then invoke a normal 'action creator'
+    // This will update 'receiveDataAction'
+    function handleInitialData () {
+        return (dispatch) => {
+            // Fetching data asynchronously from mock API
+            // if promise is resolved
+            return Promise.all([
+                API.fetchTodos(),
+                API.fetchGoals(),
+            // these will run when the request has been resolved
+            ]).then(([todos, goals]) => {
+                dispatch(receiveDataAction(todos, goals)) 
+            })
+        }
+    }
+
     // Redux Middleware
     const checker = (store) => (next) => (action) => {
         if (
@@ -227,12 +271,11 @@
         class Todos extends React.Component {
             addItem = (e) => {
                 e.preventDefault()
-                return API.saveTodo(this.input.value)
-                    .then((todo) => {
-                        this.props.store.dispatch(addTodoAction(todo))
-                        this.input.value = ''
-                    })
-                    .catch(() => alert('There was an error. Try again Please.'))
+
+                this.props.store.dispatch(handleAddTodo(
+                    this.input.value,
+                    () => this.input.value = ''
+                ))
             }
 
             // Removing function item from the list
@@ -243,11 +286,7 @@
             }
 
             toggleItem = (id) => {
-                return API.saveTodoToggle(id)
-                    .catch(() => {
-                        this.props.store.dispatch(toggleTodoAction(id))
-                        alert('Error Error. Try again Later.')
-                    })
+                this.props.store.dispatch(handleToggle(id))
             }
             render() {
                 return (
@@ -308,18 +347,10 @@
         class App extends React.Component {
             componentDidMount () {
                 const { store } = this.props
+
+                store.dispatch(handleInitialData())
                 
-                // Fetching data asynchronously from mock API
-                // if promise is resolved
-                Promise.all([
-                    API.fetchTodos(),
-                    API.fetchGoals(),
-                // these will run when the request has been resolved
-                ]).then(([todos, goals]) => {
-                    // console.log('todos', todos)
-                    // console.log('goals', goals)
-                    store.dispatch(receiveDataAction(todos, goals)) 
-                })
+
 
                 // Causes force update - re-render
                 store.subscribe(() => this.forceUpdate())
