@@ -8,6 +8,7 @@
     <script src='https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js'></script>
     <script src='https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js'></script>
     <script src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js'></script>
+    <script src='https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js'></script>
     <!-- Created dummy api instead of creating a server -->
     <script src='API.js'></script>
 </head>
@@ -179,13 +180,14 @@
         return result
     }
 
-    const thunk = (store) => (next) => (action) => {
-        if (typeof action === 'function') {
-            return action(store.dispatch)
-        }
-
-        return next(action)
-    }
+    // No Longer Need to create 'thunk' because I just added a popular thunk script above
+    // It is a popular library
+    // const thunk = (store) => (next) => (action) => {
+    //     if (typeof action === 'function') {
+    //         return action(store.dispatch)
+    //     }
+    //     return next(action)
+    // }
 
     // Reducer function
     function todos (state = [], action) {
@@ -246,7 +248,7 @@
       todos,
       goals,
       loading
-    }), Redux.applyMiddleware(thunk,checker, logger))
+    }), Redux.applyMiddleware(ReduxThunk.default,checker, logger))
     </script>
 
     <!-- 4 React components - App, Goals, Todos, List -->
